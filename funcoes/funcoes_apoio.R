@@ -11,9 +11,13 @@
 # entrada: ano, caminho
 # caminho do arquivo zip
 
-encontra_pnadc <- function(ano,caminho = ""){
+encontra_pnadc <- function(ano,caminho = "",n_visita = NULL,n_trimestre = NULL){
   stopifnot("ano deve ser numérico"=is.numeric(ano))
   stopifnot("caminho deve ser texto"=is.character(caminho))
+  
+ ## se tem anual - loop do anual
+  
+  
   
   caminho_final <- list.files(paste0(caminho,"Dados"), 
                    pattern=paste0("*PNADC_",ano), full.names=TRUE)
@@ -26,6 +30,8 @@ encontra_pnadc <- function(ano,caminho = ""){
         decreasing = TRUE))
     }
   return(caminho_final[i_arquivo_recente])
+  
+  # se tem trimestrsal loop do trimestral e filtrar trimestre
 }
 
 
@@ -137,21 +143,29 @@ filtrar_dir_anos <- function(dir_principal) {
 }
 
 
-filtrar_dir_anos(caminho_final)
+#filtrar_dir_anos(caminho_final)
 
 
 
 
-diretorio_microdados <- function(n_visita){
-  dir_apoio = "./../Anual/Microdados/Visita/Visita_"
+diretorio_microdados <- function(ano, n_visita = NULL,n_trimestre = NULL){
+  dir_anual_apoio = "./../Anual/Microdados/Visita/Visita_"
+  dir_trimestral_apoio = "./../Trimestral/Microdados/"
   
-  if(n_visita == 1){
-    return(paste0(dir_apoio,'1/'))
+  if(!is.null(n_visita)){
+    if(n_visita == 1){
+      return(paste0(dir_anual_apoio,'1/'))
+    }
+    
+    if(n_visita == 5){
+      return(paste0(dir_anual_apoio,'5/'))
+    }
   }
   
-  if(n_visita == 5){
-    return(paste0(dir_apoio,'5/'))
-  }
+  if(!is.null(n_trimestre)){
+      return(paste0(dir_trimestral_apoio,ano,'/PNADC_0',n_trimestre,ano))
+    }
+  
 }
 
 
