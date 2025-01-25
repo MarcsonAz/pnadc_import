@@ -9,7 +9,7 @@ p_load(
   character.only = TRUE
 )
 
-source('./funcoes/funcoes_apoio.R')
+#source('./funcoes/funcoes_apoio.R')
 
 #### ANUAL ####
 
@@ -71,10 +71,10 @@ p_load(
   character.only = TRUE
 )
 
-source('./funcoes/funcoes_apoio.R')
+#source('./funcoes/funcoes_apoio.R')
 
-ANO = 2024
-TRIMESTRE = 1
+ANO = 2023
+TRIMESTRE = 4
 
 data_path = paste0("./../Trimestral/Microdados/",ANO,"/PNADC_0",TRIMESTRE,ANO,".Zip")
 
@@ -84,8 +84,9 @@ dic_path = "./../Trimestral/Microdados/Documentacao/dicionario_PNADC_microdados_
 
 def_path = "./../Trimestral/Microdados/Documentacao/deflator_PNADC_2024_trimestral_070809.xls"
 
-var_list = c("V2009","V4009","V4019","V4032",
-              "VD4001","VD4002","VD4003","VD4009","VD4012")
+var_list = c("UF","V1022","V2007","V2010","V2009","V4009","V4019","V4032",
+             "VD4001","VD4002","VD4003","VD4009","VD4012","VD4007","VD4016",
+             "VD4031")
 
 pnadc.df <- read_pnadc(microdata=data_path, 
                        input_txt=input_path, 
