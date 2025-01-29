@@ -303,6 +303,11 @@ df_rend_quantis_plot %>%
   ggplot(aes(y=grupo, x=value, group=grupo, color=grupo)) +
   geom_line()
 
+diretorio_resultados= "./../rds/resultados/"
+
+ggsave(filename = paste0(diretorio_resultados,"distribuicao_rendimento_contribuinte_2019.png"), device = "png",
+       width = 10, height = 7, units = "cm")
+
 df_rend_quantis_plot %>% 
   ggplot(aes(y=value, group=grupo, color=grupo)) +
   geom_boxplot()
@@ -342,6 +347,159 @@ t_teste = svyby(~one, by = ~renda_ate_50,
 
 
 svytotal(~one,design = subset(pnadc.survey.2019,VD4002=="Pessoas ocupadas"))
+
+
+#########
+# perfil de 2023
+
+diretorio_rds = "./../rds/"
+
+pnadc.survey.2023 <- readRDS(paste0(
+  diretorio_rds,"arquivo_survey_2023_trimestral_t4.rds"
+))
+
+# TOTAIS E REMUNERAÇÃO HABITUAL 
+
+variaveis <- names(pnadc.survey.2023$variables)
+
+### deflacionar
+pnadc.survey.2023$variables <- transform(pnadc.survey.2023$variables, VD4016_hab=VD4016*Habitual)
+
+rend_medio <- svymean(~VD4016_hab, 
+                      design = subset(pnadc.survey.2023,
+                                      VD4002=="Pessoas ocupadas",
+                                      VD4016>0), 
+                      na.rm=TRUE)
+
+cv(object=rend_medio)*100
+
+#            mean     SE      CV
+#VD4016_hab 3049.3 27.638  0.009063653 
+
+## tabela sidra - 5436
+## 3.049 0,9 %
+
+## tabulacoes
+
+
+rend_medio_sexo <- svyby(~VD4016_hab, by = ~V2007, 
+                         design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+                         FUN=svymean,
+                         na.rm=TRUE)
+
+
+cv(object=rend_medio_sexo)*100
+
+
+
+## contribuinte remuneração média
+
+rend_contrib = svyby(~VD4016_hab, by = ~VD4012, 
+                     design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+                     FUN=svymean,
+                     na.rm=TRUE)
+
+
+## contribuinte remuneração média e posicao na ocupacao
+
+rend_contrib_pos = svyby(~VD4016_hab, by = ~interaction(VD4012,VD4009), 
+                         design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+                         FUN=svymean,
+                         na.rm.all=TRUE,
+                         na.rm=TRUE,
+                         na.rm.by=TRUE)
+
+
+
+rend_pos = svyby(~VD4016_hab, by = ~VD4009, 
+                 design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+                 FUN=svymean,
+                 na.rm.all=TRUE,
+                 na.rm=TRUE,
+                 na.rm.by=TRUE)
+
+
+t_pos <- svyby(~one, by = ~VD4009, 
+               design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+               FUN=svytotal,
+               na.rm.all=TRUE,
+               na.rm=TRUE,
+               na.rm.by=TRUE)
+
+
+t_contrib <- svyby(~one, by = ~VD4012, 
+               design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+               FUN=svytotal,
+               na.rm.all=TRUE,
+               na.rm=TRUE,
+               na.rm.by=TRUE)
+
+
+t_contrib_pos <- svyby(~one, by = ~interaction(VD4012,VD4009),
+                   design = subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+                   FUN=svytotal,
+                   na.rm.all=TRUE,
+                   na.rm=TRUE,
+                   na.rm.by=TRUE)
+
+write.csv2(rend_medio,paste0(diretorio_resultados,"rend_medio_23.csv"))
+
+write.csv2(rend_contrib_pos,paste0(diretorio_resultados,"rend_contrib_pos_23.csv"))
+write.csv2(rend_contrib,paste0(diretorio_resultados,"rend_contrib_23.csv"))
+write.csv2(rend_pos,paste0(diretorio_resultados,"rend_pos_23.csv"))
+write.csv2(t_pos,paste0(diretorio_resultados,"t_pos_23.csv"))
+write.csv2(t_contrib,paste0(diretorio_resultados,"t_contrib_23.csv"))
+write.csv2(t_contrib_pos,paste0(diretorio_resultados,"t_contrib_pos_23.csv"))
+
+#### quantile 
+
+# distribuição de rendimento
+
+rend_quantis <- svyquantile(~VD4016_hab,
+                            design=subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"),
+                            na.rm=TRUE,
+                            quantiles=c(0.1,0.25,0.5,0.75,0.9),
+                            ci=FALSE)
+
+
+# # distribuição de rendimento por contribuinte
+
+rend_quantis_contrib <- svyquantile(~VD4016_hab,
+                                    design=subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"&
+                                                    VD4012=="Contribuinte"),
+                                    na.rm=TRUE,
+                                    quantiles=c(0.1,0.25,0.5,0.75,0.9),
+                                    ci=FALSE)
+
+rend_quantis_n_contrib <- svyquantile(~VD4016_hab,
+                                      design=subset(pnadc.survey.2023,VD4002=="Pessoas ocupadas"&
+                                                      VD4012=="Não contribuinte"),
+                                      na.rm=TRUE,
+                                      quantiles=c(0.1,0.25,0.5,0.75,0.9),
+                                      ci=FALSE)
+
+df_rend_quantis <- rbind(
+  as.data.frame(rend_quantis$VD4016_hab),
+  as.data.frame(rend_quantis_contrib$VD4016_hab),
+  as.data.frame(rend_quantis_n_contrib$VD4016_hab)
+) %>% as_tibble() %>% 
+  mutate(grupo = c('Ocupados','Contribuintes','Não contribuintes')) %>% 
+  select(grupo, everything())
+
+write.csv2(df_rend_quantis,paste0(diretorio_resultados,"df_rend_quantis_23.csv"))
+
+df_rend_quantis_plot <- df_rend_quantis %>% 
+  tidyr::pivot_longer(cols= `0.1`:`0.9`,names_to = 'quantil', names_prefix = "quantil")
+
+
+df_rend_quantis_plot %>% 
+  ggplot(aes(y=grupo, x=value, group=grupo, color=grupo)) +
+  geom_line()
+
+diretorio_resultados= "./../rds/resultados/"
+
+ggsave(filename = paste0(diretorio_resultados,"distribuicao_rendimento_contribuinte_2023.png"), device = "png",
+       width = 10, height = 7, units = "cm")
 
 
 
