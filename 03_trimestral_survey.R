@@ -8,7 +8,7 @@ trimestral_survey <- function(df,
   
   df <- pnadc_labeller(data_pnadc = df, dictionary.file = dic_path)
   
-  df <- pnadc_deflator(data_pnadc = df, deflator.file = def_path)
+  df <- pnadc_deflator(data_pnadc =df, deflator.file = def_path)
   
   survey <- pnadc_design(data_pnadc = df)
   

@@ -73,10 +73,10 @@ p_load(
 
 #source('./funcoes/funcoes_apoio.R')
 
-ANO = 2023
+ANO = 2019
 TRIMESTRE = 4
 
-data_path = paste0("./../Trimestral/Microdados/",ANO,"/PNADC_0",TRIMESTRE,ANO,".Zip")
+data_path = paste0("./../Trimestral/Microdados/",ANO,"/PNADC_0",TRIMESTRE,ANO,"_20220916.Zip")
 
 input_path = "./../Trimestral/Microdados/Documentacao/input_PNADC_trimestral.txt"
 
@@ -108,7 +108,7 @@ pnadc.survey <- trimestral_survey(pnadc.df,
 diretorio_rds= "./../rds/"
 
 nome_arquivo = paste0(diretorio_rds,
-                      "arquivo_survey_",ANO,"_trimestral_t",VISITA,".rds")
+                      "arquivo_survey_",ANO,"_trimestral_t",TRIMESTRE,".rds")
 
 saveRDS(pnadc.survey,file=nome_arquivo)
 
